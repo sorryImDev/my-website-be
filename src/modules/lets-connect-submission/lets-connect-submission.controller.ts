@@ -1,41 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
 import { LetsConnectSubmissionService } from './lets-connect-submission.service';
 import { CreateLetsConnectSubmissionDto } from './dto/create-lets-connect-submission.dto';
 import { UpdateLetsConnectSubmissionDto } from './dto/update-lets-connect-submission.dto';
 import { EmailService } from 'src/service/email/email.service';
+import { Throttle } from '@nestjs/throttler';
+import { LetsConnectSubmission } from './entities/lets-connect-submission.entity';
+import { EmailConstants, EmailRespMessage } from 'src/constants/email.constants';
 
 @Controller('lets-connect-submission')
 export class LetsConnectSubmissionController {
-  constructor(
-    private readonly letsConnectSubmissionService: LetsConnectSubmissionService,
-  ) {}
+  constructor(private readonly letsConnectSubmissionService: LetsConnectSubmissionService) {}
 
   @Post('/submit')
-  create(@Body() createLetsConnectSubmissionDto: CreateLetsConnectSubmissionDto) {
-    const submission = this.letsConnectSubmissionService.create(createLetsConnectSubmissionDto);
-    return 
-  }
+  async create(@Body() createLetsConnectSubmissionDto: CreateLetsConnectSubmissionDto) {
+    const { email, name } = createLetsConnectSubmissionDto;
 
-  @Get()
-  findAll() {
-    return this.letsConnectSubmissionService.findAll();
-  }
+    if (!email || !name) {
+      throw new HttpException(' Email and name are required fields.', HttpStatus.BAD_REQUEST);
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.letsConnectSubmissionService.findOne(+id);
-  }
+    const submission = await this.letsConnectSubmissionService.create(
+      createLetsConnectSubmissionDto,
+    );
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateLetsConnectSubmissionDto: UpdateLetsConnectSubmissionDto,
-  ) {
-    return this.letsConnectSubmissionService.update(+id, updateLetsConnectSubmissionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.letsConnectSubmissionService.remove(+id);
+    if (submission.success) {
+      const submissionResp = new LetsConnectSubmission();
+      submissionResp.statusCode = HttpStatus.OK;
+      submissionResp.message = EmailRespMessage.SUCCESS;
+      return submissionResp;
+    } else {
+      throw new HttpException(
+        `Failed to sene email: ${submission.error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

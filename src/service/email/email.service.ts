@@ -10,25 +10,18 @@ export class EmailService {
   private transporter;
 
   constructor() {
-    // dev credentials
     this.transporter = nodemailer.createTransport({
-      host: 'sandbox.smtp.mailtrap.io',
-      port: 2525,
+      service: 'Gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      requireTLS: true,
       auth: {
-        user: '4590c05d30ae76',
-        pass: '********a8f3',
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
-    // Prod credentials
-    // this.transporter = nodemailer.createTransport({
-    //     service: 'gmail',
-    //     auth: {
-    //       user: process.env.EMAIL_USER,  // Set environment variables for security
-    //       pass: process.env.EMAIL_PASS,  // Email password or app-specific password
-    //     },
-    //   });
   }
-
   private generateEmailContent(templatePath: string, data: any): string {
     const template = readFileSync(templatePath, 'utf-8');
     const compiledTemplate = Handlebars.compile(template);
@@ -54,17 +47,26 @@ export class EmailService {
   }
 
   async sendSubmittedTYEmail(toEmail: string, username: string) {
-    const templatePath = path.resolve(
-      'static',
-      'templates',
-      'email',
-      'submitted-thank-you.hbs',
-    );
+    const templatePath = path.resolve('static', 'templates', 'email', 'submitted-thank-you.hbs');
     console.log(templatePath);
     const htmlContent = this.generateEmailContent(templatePath, {
       username,
     });
-
-    await this.sendEmail(toEmail, EmailConstants.SUBJECT_SUBMISSTION_THANKYOU, htmlContent);
+    try {
+      const info = await this.sendEmail(
+        toEmail,
+        EmailConstants.SUBJECT_SUBMISSTION_THANKYOU,
+        htmlContent,
+      );
+      return {
+        success: true,
+        response: info.response,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 }
