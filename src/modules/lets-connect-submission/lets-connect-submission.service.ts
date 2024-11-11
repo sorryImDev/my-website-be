@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLetsConnectSubmissionDto } from './dto/create-lets-connect-submission.dto';
 import { UpdateLetsConnectSubmissionDto } from './dto/update-lets-connect-submission.dto';
+import { EmailService } from 'src/service/email/email.service';
+import { EmailConstants } from 'src/constants/email.constants';
 
 @Injectable()
 export class LetsConnectSubmissionService {
+  constructor(private readonly emailService: EmailService) {}
+
   create(createLetsConnectSubmissionDto: CreateLetsConnectSubmissionDto) {
     console.log(createLetsConnectSubmissionDto);
+    const { email, name } = createLetsConnectSubmissionDto;
+    this.emailService.sendSubmittedTYEmail(email, name);
     return 'This action adds a new letsConnectSubmission';
   }
 

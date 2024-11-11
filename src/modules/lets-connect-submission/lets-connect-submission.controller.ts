@@ -8,7 +8,6 @@ import { EmailService } from 'src/service/email/email.service';
 export class LetsConnectSubmissionController {
   constructor(
     private readonly letsConnectSubmissionService: LetsConnectSubmissionService,
-    private readonly emailService: EmailService,
   ) {}
 
   @Post('/submit')
