@@ -11,7 +11,7 @@ import { APP_GUARD } from '@nestjs/core';
     LetsConnectSubmissionModule,
     ThrottlerModule.forRoot([
       {
-        ttl: 60,
+        ttl: 60000,
         limit: 5, //per ip-address
       },
     ]),

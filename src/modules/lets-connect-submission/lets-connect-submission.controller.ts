@@ -17,6 +17,8 @@ import { Throttle } from '@nestjs/throttler';
 import { LetsConnectSubmission } from './entities/lets-connect-submission.entity';
 import { EmailConstants, EmailRespMessage } from 'src/constants/email.constants';
 
+
+
 @Controller('lets-connect-submission')
 export class LetsConnectSubmissionController {
   constructor(private readonly letsConnectSubmissionService: LetsConnectSubmissionService) {}
@@ -24,9 +26,11 @@ export class LetsConnectSubmissionController {
   @Post('/submit')
   async create(@Body() createLetsConnectSubmissionDto: CreateLetsConnectSubmissionDto) {
     const { email, name } = createLetsConnectSubmissionDto;
-
-    if (!email || !name) {
-      throw new HttpException(' Email and name are required fields.', HttpStatus.BAD_REQUEST);
+    const submissionResp = new LetsConnectSubmission();
+    if (!email || !name || name.trim().length === 0) {
+      submissionResp.status = HttpStatus.BAD_REQUEST;
+      submissionResp.message = EmailRespMessage.BAD_NAME_EMAIL;
+      return submissionResp;
     }
 
     const submission = await this.letsConnectSubmissionService.create(
@@ -35,12 +39,12 @@ export class LetsConnectSubmissionController {
 
     if (submission.success) {
       const submissionResp = new LetsConnectSubmission();
-      submissionResp.statusCode = HttpStatus.OK;
+      submissionResp.status = HttpStatus.OK;
       submissionResp.message = EmailRespMessage.SUCCESS;
       return submissionResp;
     } else {
       throw new HttpException(
-        `Failed to sene email: ${submission.error}`,
+        `${submission.response}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

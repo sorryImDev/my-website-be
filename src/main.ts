@@ -16,6 +16,3 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 8080);
 }
 bootstrap();
-
-// EMAIL_USER=workylappy05@gmail.com
-// EMAIL_PASS=rkus erct ktpl vnvu

@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
 export class LetsConnectSubmission {
-  statusCode: HttpStatus;
+  status: HttpStatus;
   message: string;
 }
